@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+   
+    #wheelLottary {
+        width: 600px;
+        height: 600px;
+    }
+    </style>
+</head>
+<body>
+
+<div id="wheelLottary"></div>
+
+
+<script src="https://cdn.anychart.com/js/8.0.1/anychart-core.min.js"></script>
+<script src="https://cdn.anychart.com/js/8.0.1/anychart-pie.min.js"></script>
+
+<script>
+anychart.onDocumentReady(function() {
+
+// set the data
+var data = [
+    {x: "White", value: 3},
+    {x: "Black or African American", value: 2},
+    {x: "Asian", value: 4},
+];
+
+// create the chart
+var chart = anychart.pie();
+
+// set the chart title
+// chart.title("Population by Race for the United States: 2010 Census");
+
+// add the data
+chart.data(data);
+
+// display the chart in the container
+chart.container('wheelLottary');
+chart.draw();
+
+});
+</script>
+</body>
+</html>
