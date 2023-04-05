@@ -1,0 +1,37 @@
+{
+	"folders": [
+		{
+			"path": "../../../../../../xampp/htdocs/WP_functions"
+		},
+		{
+			"path": "../../../../../../xampp/htdocs/laravelNuxt"
+		},
+		{
+			"path": "../../../../../../xampp/htdocs/tanvir"
+		},
+		{
+			"path": "../../../../../../xampp/htdocs/wp"
+		},
+		{
+			"path": "."
+		},
+		{
+			"path": "../../../../../../xampp/htdocs/sms"
+		},
+		{
+			"path": "../../../../../../ooo/htdocs/www/wp-content"
+		},
+		{
+			"path": "../../../../../../xampp/htdocs/project"
+		},
+		{
+			"path": "../../../../../../ooo/htdocs/pluginWP"
+		},
+		{
+			"path": "../../../../../../ooo/htdocs/test"
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "WP_functions"
+	}
+}
