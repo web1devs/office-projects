@@ -1,0 +1,129 @@
+
+#giveaways_contaniner{
+    margin: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+#giveaways_contaniner, .giveways_title h2{
+    font-size: 22px;
+}
+
+#giveaways_contaniner label{
+    font-size:15px;
+    padding-bottom:8px;
+}
+
+#giveaways_contaniner label.search_admin_setting_label {
+    display: none;
+}
+
+#entrie_number {
+    margin-bottom: 17px;
+    width: 30%;
+}
+#giveaways_search {
+    width: 30%;
+    display: none;
+    
+}
+
+#giveaways_additional_entry {
+    margin-bottom: 17px;
+    width: 30%;
+}
+
+#giveaways_contaniner .button{
+    width: 20%;
+    margin-top: 17px;
+    
+}
+
+#giveaways_estimate_value {
+    margin-bottom: 17px;
+    width: 30%;
+  }
+
+/* Loader Image section  */
+
+#loader_img{
+    height: 30px;
+    width: 30px;
+    margin-bottom: 10px;
+    display: none;
+}
+
+.w30p{
+    width:30%;
+}
+/* search section start here */
+
+.search_panel {
+    display: none;
+}
+
+.search_panel label.search_label {
+    text-align: left;
+    margin-left: 1px !important;
+    display: block;
+}
+.search_panel input.giveaways_search {
+    width:100%
+}
+
+.selected_giveaways  {
+    padding-left: 10px;
+}
+
+.search_dropdown li {
+    text-align: left;
+    padding-left: 10px;
+    padding: 5px;
+    border-bottom: 1px solid #bfbcbc9e;
+}
+
+.search_dropdown li:hover{
+    cursor: pointer;
+    background-color: #97979775;
+}
+
+
+/* for simple product page */
+#general_product_data .search_panel label.search_label {
+    text-align: left;
+    margin-left: 1px !important;
+    padding-left: 10px;
+    display: block;
+}
+
+
+#general_product_data .search_panel input.giveaways_search {
+    width: 58%;
+}
+
+#general_product_data .search_dropdown li {
+    margin: 10px;
+}
+
+.selected_giveaways span {
+    background:#e3e3e4;
+    margin:2px;
+    padding:3px;
+    border-radius:10px;
+}
+
+.selected_giveaways span.giveaway_close {
+    color: red;
+    background: white;
+    font-weight: 600;
+    padding: 2px;
+    border-radius: 10px;
+}
+
+.selected_giveaways span.giveaway_close:hover{
+    cursor: pointer;
+}
+
+
+
+/* search section end here */

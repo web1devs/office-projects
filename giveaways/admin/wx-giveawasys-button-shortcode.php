@@ -1,0 +1,7 @@
+<?php
+
+/*
+ Giveaways Button Shortcode 
+*/
+
+
