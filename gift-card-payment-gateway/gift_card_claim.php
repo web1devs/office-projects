@@ -121,15 +121,6 @@ function gifttowallet_gift_card_style(){
     border-bottom: 1px solid #ddd !important;
   }
 
-    /*popup css Start now*/
-  .popup-wrap {
-    font: normal 14px/100% "Andale Mono", AndaleMono, monospace;
-    width: 300px;
-    margin: 0 auto;
-    display:flex;
-    align-items:center;
-  /*   height:100vh; */
-  }
   .Click-here {
     cursor: pointer;
     transition:background-image 3s ease-in-out;
@@ -180,7 +171,6 @@ function gifttowallet_gift_card_style(){
     width: 100%;
     position: relative;
     background-color: #fff;
-    border: 1px solid #999;
     border: 1px solid rgba(0, 0, 0, 0.2);
     border-radius: 6px;
     -webkit-box-shadow: 0 3px 9px rgba(0, 0, 0, 0.5);
@@ -195,33 +185,17 @@ function gifttowallet_gift_card_style(){
     max-height: calc(100vh - 70px);
       overflow-y: auto;
   }
-  
-  .pop-up-content-wrap p, .pop-up-content-wrap ol li {
-      color: #000000;
-      font-style:normal;
-      text-transform:none;
-      font-family: 'Lato';
-      font-weight: 400;
-      letter-spacing: normal;
-      vertical-align: baseline;
-      word-spacing: 0px;
-      font-size: 16px;
-      line-height:24px;
-      margin-bottom: 0.5em;
+  .gift-btn-wrap {
+    margin-top: 12px;
   }
-  .pop-up-content-wrap h3 {
-      font-size: 26px !important;
-      line-height: 1.28205em;
-      margin-top: 1.28205em;
-      margin-bottom: 1.28205em;
+  .pop-up-content-wrap p {
+    margin-bottom: auto;
+    line-height: 1.7em;
   }
-  .pop-up-content-wrap h3, .pop-up-content-wrap h4 {
-        font-family: "Lato", Sans-serif  !important;
-        line-height: normal;
-    }
-    .gift-btn-wrap {
-        margin-top: 12px;
-    }
+
+  .pop-up-content-wrap .gift-card-info {
+    margin-top: 16px;
+  }
   .model-open .popup-model-inner {
     -webkit-transform: translate(0, 0);
     -ms-transform: translate(0, 0);
@@ -306,7 +280,7 @@ function wp_admin_dashboard_gift_card_menu_reg() {
 }
 
 function admin_gift_claim_page() {
-    echo "<h2>'.__('Gift Card Pay','gtw-payment-gateway').'</h2>";
+    echo '<h2>'.__('Gift Card Pay','gtw-payment-gateway').'</h2>';
 }
 
 // submenu page = claim_gift_card_fun
@@ -326,6 +300,9 @@ function gift_card_setting_fun() {
 
             <table>
                 <tbody class="gift-card-form">
+                    <tr>
+                        <td colspan="2">Partner Admin Or Employee login details</td>
+                    </tr>
                     <tr>
                         <td><?=__('Email: ','gtw-payment-gateway')?></td>
                         <td>
@@ -373,12 +350,11 @@ function thakas_gift_card_input() {
     global $wp;
 
     // Get the order ID
-    $order_id  = absint( $wp->query_vars['order-received'] );
-    $order  = wc_get_order($order_id);
+    $order_id       = absint( $wp->query_vars['order-received'] );
+    $order          = wc_get_order($order_id);
 
-    $orderStatus  = $order->get_status();
+    $orderStatus    = $order->get_status();
     $orderPaymentM  = $order->get_payment_method();
-    // $orderPaymentMt  = $order->get_payment_method_title();
 
         if($orderStatus=='pending' && $orderPaymentM=='gifttowallet'){
 
@@ -390,6 +366,18 @@ function thakas_gift_card_input() {
         <div id="processingMessage"></div>
 
         <input class="gift-input" type="text" name="gift_claim_card_number" value="" placeholder="<?=__('Enter Card Number','gtw-payment-gateway')?>">
+
+        <?php 
+        
+
+        $old_payment = get_post_meta($order_id, 'total_payment', true );
+        if($old_payment){
+            $dueAmount = $order->get_total() - $old_payment;
+        }else{
+            $dueAmount = $order->get_total();
+        }
+        ?>
+        <input type="hidden" name="pay_amount" value="<?php echo $dueAmount; ?>" >
         <span class="dis-btn">
             <button type="button" onclick="enter_gift_card_number()" class="Click-here" ><?=__('Claim','gtw-payment-gateway')?></button>
         </span>
@@ -466,9 +454,7 @@ function gifttowallet_gift_card_footer_script(){
         }else {
             $totalP = $order->get_total();
         }
-        
-         ?>
-
+        ?>
 
         let orderId    = "<?php echo $order_id; ?>";
         let price    = "<?php echo $totalP; ?>";
@@ -491,10 +477,17 @@ function gifttowallet_gift_card_footer_script(){
                 },
                 success: function(response) { 
                     jQuery('#claimSMS').html(``);
-                    jQuery('.dis-btn').html(`<button onclick='experience_gift_card_claim()' class="btn-gift-claim" type="button"><?=__('Claim','gtw-payment-gateway')?></button>`);
 
-                    jQuery('#discount-val').html(`${response.html}`);
-                    location.reload();
+                    if(response.status === 'notok'){
+                        jQuery('#processingMessage').html(`<h2 style="color: red;">${response.message}</h2>`);
+                        jQuery(".popup-model-main").removeClass('model-open');
+                        jQuery('.dis-btn').html(`<button onclick='enter_gift_card_number()' class="Click-here" type="button"><?=__('Claim','gtw-payment-gateway')?></button>`);
+                        
+                    }else{
+                        jQuery('.dis-btn').html(`<button onclick='experience_gift_card_claim()' class="btn-gift-claim" type="button"><?=__('Claim','gtw-payment-gateway')?></button>`);
+                        jQuery('#discount-val').html(`${response.html}`);
+                        location.reload();
+                    }
                     
                 }
             });
@@ -559,14 +552,19 @@ function gifttowallet_gift_card_footer_script(){
                 },
                 success: function(response) { 
                     jQuery('#claimInfoMessage').html(``);
-                    jQuery('.dis-btn').html(`<button onclick='regular_gift_card_claim()' class="btn-gift-claim" type="button"><?=__('Claim','gtw-payment-gateway')?></button>`);
 
-                    jQuery('#processingMessage').html(`Add Fee done`);
+                    if(response.status === 'notok'){
+                        jQuery('#processingMessage').html(`<h2 style="color: red;">${response.message}</h2>`);
+                        jQuery(".popup-model-main").removeClass('model-open');
+                        jQuery('.dis-btn').html(`<button onclick='enter_gift_card_number()' class="Click-here" type="button"><?=__('Claim','gtw-payment-gateway')?></button>`);
 
-                    jQuery('#discount-val').html(`${response.html}`);
-                    location.reload();
+                    }else{
+                        jQuery('.dis-btn').html(`<button onclick='regular_gift_card_claim()' class="btn-gift-claim" type="button"><?=__('Claim','gtw-payment-gateway')?></button>`);
+                        jQuery('#discount-val').html(`${response.html}`);
+                        location.reload();
+                    }
                     
-                 }
+                }
             });
         } else {
             jQuery('#claimInfoMessage').html(`<?=__('Please input the correct amount','gtw-payment-gateway')?>`);
@@ -577,6 +575,7 @@ function gifttowallet_gift_card_footer_script(){
     // Form submit function onclick='enter_gift_card_number()'
     function enter_gift_card_number() {
         let cardNum = jQuery("input[name='gift_claim_card_number']").val();
+        let cardPay = jQuery("input[name='pay_amount']").val();
 
         jQuery('#processingMessage').html(`<?=__('Please wait we are processing ...','gtw-payment-gateway')?>`);
         jQuery('.dis-btn').html(`<button disabled class="btn-gift-claim" style="cursor: not-allowed;" type="button"><?=__('Claim','gtw-payment-gateway')?><span class="gift_loding">&#10044;</spa></button>`);
@@ -587,7 +586,8 @@ function gifttowallet_gift_card_footer_script(){
             url: '<?php echo admin_url('admin-ajax.php'); ?>',
             data: {
                 action: 'gift_card_info_on_popup',
-                card_num: cardNum
+                card_num: cardNum,
+                pay_amount: cardPay
 
             },
             success: function(response) { 
@@ -627,18 +627,8 @@ function gifttowallet_gift_card_footer_script(){
 function gift_card_info_on_popup() {
     
         $giftCardNumber = sanitize_text_field($_POST["card_num"]);
+        $amountDue      = sanitize_text_field($_POST["pay_amount"]);
 
-        /*
-        $datetime_1 = get_option('gift_card_token_set_time');
-        $datetime_2 = date('Y-m-d h:i:s');
-        $start_datetime = new DateTime($datetime_1); 
-        $diff = $start_datetime->diff(new DateTime($datetime_2)); 
-        $time = $diff->h; 
-        
-        if( $time > 20 ) {
-            gift_card_token();
-        }
-        */
         creat_token();
         $giftCardToken = get_option('gift_card_token');
 
@@ -663,8 +653,6 @@ function gift_card_info_on_popup() {
         curl_close($curl);
 
         $obj = json_decode($response, true);
-        // echo $response;
-        // print_r($obj);
 
         $apiCall = $obj['success']; // true | false
 
@@ -696,13 +684,12 @@ function gift_card_info_on_popup() {
 
 
         if($date_current > $date_expiry){
-            // echo "<br>Ex date -- ".$expiry_date;
-            // echo "<br>Curent date -- ".$current_date;
             echo json_encode(['status'=>'notok', 'message' => __('Card expired','gtw-payment-gateway'),'html'=>'']);
         }else{
             if($card_type=='experience' && $total_transactions>0){
                 echo json_encode(['status'=>'notok', 'message' => __('Card Used','gtw-payment-gateway'),'html'=>'']);
             }else{
+
                 if($card_type=='experience'){
 
                     $cardNum = $obj["result"]["card_number"];
@@ -710,15 +697,17 @@ function gift_card_info_on_popup() {
                     
                     $experience_html = '
                     <div>
+                    
                         <h3>'.__('Information about the gift card you entered','gtw-payment-gateway').'</h3>
-                        <h4>'.__('Gift card number: ','gtw-payment-gateway').$cardNum.'</h4>
+                        <p>'.__('Gift card number: ','gtw-payment-gateway').$cardNum.'</p>
                         <div class="gift-card-info">
                             <input type="hidden" name="cardId" value="'.$cardNum.'">
                             <input type="hidden" name="cardBal" value="'.$cardBal.'">
                         </div>
 
-                        <h4>'.__('Expiration date : ','gtw-payment-gateway').$obj["result"]["expiry_date"].'</h4>
-                        <h4>'.__('Card Claim Value: ','gtw-payment-gateway').$cardBal.' Kr.</h4>
+                        <p>'.__('Expiration date : ','gtw-payment-gateway').$obj["result"]["expiry_date"].'</p>
+                        <p>'.__('Card Claim Value: ','gtw-payment-gateway').$cardBal.' Kr.</p>
+                        <p>'.__('Payable Amount: ','gtw-payment-gateway').$amountDue.' kr.</p>
                         <div class="gift-btn-wrap">
                             <div id="claimSMS"></div>
                             <span class="dis-btn">
@@ -730,7 +719,6 @@ function gift_card_info_on_popup() {
                     ';
                     echo json_encode(['status'=>'ok', 'message' => '','html'=> $experience_html]);
                 
-
                     }else{
                         
                         $cardNum = $obj["result"]["card_number"];
@@ -738,12 +726,14 @@ function gift_card_info_on_popup() {
                         
                         $reg_html = '
                         <div>
+                        
                             <h3>Information about the gift card you entered</h3>
-                            <h4>'.__('Gift card number : ','gtw-payment-gateway').$obj["result"]["card_number"].'</h4>
-                            <h4>'.__('Expiration date  : ','gtw-payment-gateway').$obj["result"]["expiry_date"].'</h4>
-                            <h4>'.__('Remaining balance: ','gtw-payment-gateway').$cardVal.'</h4>
-                            <h4>'.__('Initial balance  : ','gtw-payment-gateway').$obj["result"]["initial_balance"].'</h4>
-                            <h4>'.__('Claim Value:','gtw-payment-gateway').' <span>*</span> ('.__('Ex: 1, 100, 101, 1101, 111.110, 111110','gtw-payment-gateway').')</h4>
+                            <p>'.__('Gift card number : ','gtw-payment-gateway').$obj["result"]["card_number"].'</p>
+                            <p>'.__('Expiration date  : ','gtw-payment-gateway').$obj["result"]["expiry_date"].'</p>
+                            <p>'.__('Remaining balance: ','gtw-payment-gateway').$cardVal.'</p>
+                            <p>'.__('Initial balance  : ','gtw-payment-gateway').$obj["result"]["initial_balance"].'</p>
+                            <p>'.__('Claim Value:','gtw-payment-gateway').' <span>*</span> ('.__('Ex: 1, 100, 101, 1101, 111.110, 111110','gtw-payment-gateway').')</p>
+                            <p>'.__('Payable Amount: ','gtw-payment-gateway').$amountDue.' kr.</p>
                             <div class="gift-card-info">
                                 <input type="hidden" id="cardid" name="cardid" value="'.$cardNum.'">
                                 <input type="hidden" name="cardBalance" value="'.$cardVal.'">
@@ -815,48 +805,46 @@ function experience_claim_type() {
 
         $obj = json_decode($response, true);
         //print_r($obj);
+        if($obj["result"]){
+            // $expiry_date      =$obj["result"]["expiry_date"];
+            // $remainingBalance =$obj["result"]["remaining_balance"];
+            $transactionId    =$obj["result"]["transaction_id"];
 
-        // $expiry_date      =$obj["result"]["expiry_date"];
-        // $remainingBalance =$obj["result"]["remaining_balance"];
-        $transactionId    =$obj["result"]["transaction_id"];
-        // // $remaining_balance=$obj["result"]["remaining_balance"];
-
-        $gift_card=$giftCardNumber;
-        $gift_card_amount=$giftCardValue;
-        $gift_card_tid   =$transactionId;
-    
-        $gift_cards  = get_post_meta($giftCardOrderId, 'gift_cards_payment_record', true );
-        $payment_old = get_post_meta($giftCardOrderId, 'total_payment', true );
-        if($gift_cards){
-
-            array_push($gift_cards, [$gift_card,$gift_card_amount,$gift_card_tid]);
-                
-            update_post_meta( $giftCardOrderId, 'gift_cards_payment_record', $gift_cards);
-            $tpayment = $payment_old + $gift_card_amount;
-            update_post_meta( $giftCardOrderId, 'total_payment', $tpayment);
-                
-        }else{
-            // update_post_meta( $giftCardOrderId, 'gift_cards_payment_record', [[$gift_card,$gift_card_amount,$gift_card_tid]] );
-            add_post_meta( $giftCardOrderId, 'gift_cards_payment_record', [[$gift_card,$gift_card_amount,$gift_card_tid]], true  );
-            add_post_meta( $giftCardOrderId, 'total_payment', $gift_card_amount, true  );
-            $tPayment=$gift_card_amount;
-        }
+            $gift_card=$giftCardNumber;
+            $gift_card_amount=$giftCardValue;
+            $gift_card_tid   =$transactionId;
         
-        // change order status here
-        $dueAmount = $order->get_total() - $tPayment;
-        // echo $dueAmount; 
+            $gift_cards  = get_post_meta($giftCardOrderId, 'gift_cards_payment_record', true );
+            $payment_old = get_post_meta($giftCardOrderId, 'total_payment', true );
+            if($gift_cards){
 
-        if($dueAmount==0) {
-            $order->update_status( 'completed' );
-            $order->save();
-        }
+                array_push($gift_cards, [$gift_card,$gift_card_amount,$gift_card_tid]);
+                    
+                update_post_meta( $giftCardOrderId, 'gift_cards_payment_record', $gift_cards);
+                $tpayment = $payment_old + $gift_card_amount;
+                update_post_meta( $giftCardOrderId, 'total_payment', $tpayment);
+                    
+            }else{
+                add_post_meta( $giftCardOrderId, 'gift_cards_payment_record', [[$gift_card,$gift_card_amount,$gift_card_tid]], true  );
+                add_post_meta( $giftCardOrderId, 'total_payment', $gift_card_amount, true  );
+                $tPayment=$gift_card_amount;
+            }
             
-        echo json_encode(['status'=>'ok', 'message' => '','html'=> $thanks_html]);
+            // change order status here
+            $dueAmount = $order->get_total() - $tPayment;
+            // echo $dueAmount; 
 
-    
-    // }else {
-    //     echo json_encode(['status'=>'notok', 'message' => "don't try to be smart",'html'=> $thanks_html]);
-    // }
+            if($dueAmount==0) {
+                $order->update_status( 'completed' );
+                $order->save();
+            }
+                
+            echo json_encode(['status'=>'ok', 'message' => '','html'=> $thanks_html]);
+
+        }else {
+            echo json_encode(['status'=>'notok', 'message' => "Permission denied",'html'=> $thanks_html]);
+        }
+
     exit();
 }
 add_action('wp_ajax_experience_claim_type', 'experience_claim_type');
@@ -904,54 +892,49 @@ function regular_claim_type() {
 
 
         $obj = json_decode($response, true);
-        //print_r($obj);
-
+        // $apiRes = $obj['success']; //[success] => 1 | [message] => Reedem successfully. | [message] => Permission denied
+        if($obj["result"]){
             $expiry_date      =$obj["result"]["expiry_date"];
             $remainingBalance =$obj["result"]["remaining_balance"];
             $transactionId    =$obj["result"]["transaction_id"];
             
-            // $remaining_balance=$obj["result"]["remaining_balance"];
 
             $thanks_html = '';
-            // $thanks_html = '
-            // <tr>
-            //     <th>Gift card <b>'.$giftCardNumber.'</b> claimed</th>
-            //     <td>'.$giftCardValue.' Kr </td>
-            //     <input type="hidden" name="card_number" value="'.$giftCardNumber.'">
-            // </tr>
-            // ';
 
+            $gift_card       =$giftCardNumber;
+            $gift_card_amount=$giftCardValue;
+            $gift_card_tid   =$transactionId;
+            
+            $gift_cards  = get_post_meta($giftCardOrderId, 'gift_cards_payment_record', true );
+            $old_payment = get_post_meta($giftCardOrderId, 'total_payment', true );
+            if($gift_cards){
 
-        $gift_card       =$giftCardNumber;
-        $gift_card_amount=$giftCardValue;
-        $gift_card_tid   =$transactionId;
+                array_push($gift_cards, [$gift_card,$gift_card_amount,$gift_card_tid]);
+                    
+                update_post_meta( $giftCardOrderId, 'gift_cards_payment_record', $gift_cards);
+                $tPayment = $old_payment+$gift_card_amount;
+                update_post_meta( $giftCardOrderId, 'total_payment',$tPayment);
         
-        $gift_cards  = get_post_meta($giftCardOrderId, 'gift_cards_payment_record', true );
-        $old_payment = get_post_meta($giftCardOrderId, 'total_payment', true );
-        if($gift_cards){
+            }else{
+                add_post_meta( $giftCardOrderId, 'gift_cards_payment_record', [[$gift_card,$gift_card_amount,$gift_card_tid]], true  );
+                add_post_meta( $giftCardOrderId, 'total_payment', $gift_card_amount, true  );
+                $tPayment=$gift_card_amount;
+            }
 
-            array_push($gift_cards, [$gift_card,$gift_card_amount,$gift_card_tid]);
-                
-            update_post_meta( $giftCardOrderId, 'gift_cards_payment_record', $gift_cards);
-            $tPayment = $old_payment+$gift_card_amount;
-            update_post_meta( $giftCardOrderId, 'total_payment',$tPayment);
-    
+            // change order status here
+            $dueAmount = $order->get_total() - $tPayment;
+            // echo $dueAmount; 
+
+            if($dueAmount==0) {
+                $order->update_status( 'completed' );
+                $order->save();
+            }
+
+            echo json_encode(['status'=>'ok', 'message' => '','html'=> $thanks_html]);
         }else{
-            add_post_meta( $giftCardOrderId, 'gift_cards_payment_record', [[$gift_card,$gift_card_amount,$gift_card_tid]], true  );
-            add_post_meta( $giftCardOrderId, 'total_payment', $gift_card_amount, true  );
-            $tPayment=$gift_card_amount;
+        echo json_encode(['status'=>'notok', 'message' => "Permission denied",'html'=> $thanks_html]);
         }
 
-        // change order status here
-        $dueAmount = $order->get_total() - $tPayment;
-        // echo $dueAmount; 
-
-        if($dueAmount==0) {
-            $order->update_status( 'completed' );
-            $order->save();
-        }
-
-        echo json_encode(['status'=>'ok', 'message' => '','html'=> $thanks_html]);
     }else {
         echo json_encode(['status'=>'notok', 'message' => "don't try to be smart",'html'=> $thanks_html]);
     }
@@ -998,7 +981,7 @@ function gift_card_session_data_remove() {
                     <tbody>
                     <?php
                     $amount = 0;
-            foreach($gift_cards as $k=>$card){
+                    foreach($gift_cards as $k=>$card){
                     echo '
                     <tr>
                         <td>'.($k+1).'</td>
@@ -1008,7 +991,7 @@ function gift_card_session_data_remove() {
                     </tr>';
                     $amount += $card[1];
                 //break;
-            }
+                    }
                     ?>
                     </tbody>
                     <tfoot>
@@ -1021,11 +1004,6 @@ function gift_card_session_data_remove() {
                             <td><?php 
                                 $dueAmount = $order->get_total() - $amount;
                                 echo $dueAmount; 
-                                /*
-                                if($dueAmount==0) {
-                                    $order->update_status( 'completed' );
-                                    $order->save();
-                                } */
                             ?></td>
                         </tr>
                     </tfoot>
@@ -1037,16 +1015,11 @@ function gift_card_session_data_remove() {
 }
 
 
-
-
-
 // Ajax process for save data to option table.
 function gift_to_wallet_save_credential() {
     $giftCardUserEmail = sanitize_email($_POST['email']);
     $giftCardUserPassword = sanitize_text_field($_POST['password']);
-    // $userGift = sanitize_text_field($_POST["gift"]);
-
-    // update_option('gift_card_allowed', $userGift);
+    
     if(is_email( $giftCardUserEmail )){
 
         update_option('gift_to_wallet_email',$giftCardUserEmail);
@@ -1071,10 +1044,6 @@ function gift_to_wallet_save_credential() {
         curl_close($curl);
         
         $obj = json_decode($response, true);
-        // print_r($obj);
-        // echo $obj["success"];
-        // echo $obj["message"];
-        // echo $obj["result"]["token"];
         if($obj["success"]==1){
 
             $giftToken = $obj["result"]["token"];
@@ -1185,10 +1154,7 @@ function gift_card_token(){
                 curl_close($curl);
         
                 $obj = json_decode($response, true);
-                // print_r($obj);
-                // echo $obj["success"];
-                // echo $obj["message"];
-                // echo $obj["result"]["token"];
+                
                 if($obj["success"]==1){
 
                     $giftToken = $obj["result"]["token"];
@@ -1227,9 +1193,7 @@ function gift_card_token(){
             curl_close($curl);
 
             $obj = json_decode($response, true);
-            // print_r($obj);
-            // echo $obj["success"];
-            // echo $obj["message"];
+
             if($obj["success"]==1){
 
                 $giftToken = $obj["result"]["token"];
@@ -1244,8 +1208,7 @@ function gift_card_token(){
     }
 }
 
-// creat_token();
-// $giftCardToken = get_option('gift_card_token');
+
 function creat_token(){
     $userEmail     = get_option('gift_to_wallet_email');
     $userPass      = get_option('gift_to_wallet_pass');
@@ -1294,9 +1257,8 @@ function check_card_blance($giftCardNumber){
     creat_token();
     $giftCardToken = get_option('gift_card_token');
 
-    // echo $giftCardToken;
     $curl = curl_init();
-    // SAND-EX-2 
+    
     curl_setopt_array($curl, array(
         CURLOPT_URL => 'https://admin.gifttowallet.com/api/transactionlist?card_number='.$giftCardNumber,
         CURLOPT_RETURNTRANSFER => true,
@@ -1315,8 +1277,6 @@ function check_card_blance($giftCardNumber){
     curl_close($curl);
 
     $obj = json_decode($response, true);
-    // echo $response;
-    // print_r($obj);
 
     $apiCall = $obj['success']; // true | false
 
@@ -1325,8 +1285,6 @@ function check_card_blance($giftCardNumber){
     $total_transactions=$obj["result"]["total_transactions"];
 
     if($card_type=='experience' && $total_transactions>0){
-        // echo json_encode(['status'=>'notok', 'message' => __('Card Used','gtw-payment-gateway'),'html'=>'']);
-        // echo "Card Used";
         $cardVal = 0;
         return $cardVal;
 
